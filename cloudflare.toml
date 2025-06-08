@@ -1,15 +1,14 @@
 [build]
-command = "npm install && npm run build"
+command = "cd frontend && npm install && npm run build"
 output_directory = "frontend/build"
 
 [build.environment]
 NODE_VERSION = "18"
+NODE_ENV = "production"
+CI = "true"
 
 [build.publish]
 framework = "react"
-
-[build.environment]
-NODE_ENV = "production"
 
 [[routes]]
   pattern = "/*"
