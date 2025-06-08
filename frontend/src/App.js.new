@@ -1,0 +1,131 @@
+import React, { useState, useEffect } from "react";
+import "./App.css";
+import axios from "axios";
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+
+const BACKEND_URL = 'https://quirky-maxwell.emergent.host';
+const API = `${BACKEND_URL}/api`;
+const VAPI_PUBLIC_KEY = '54bc38a3-ee48-4196-aca1-9c69eab79d1e';
+const GOOGLE_CLIENT_ID = '854027414985-6rm434tqail2661j4tv9kgl0350bn8rf.apps.googleusercontent.com';
+const STRIPE_PUBLISHABLE_KEY = 'pk_live_51RWMzmP5uMQGZpKDO5pprsO2Sj2BKKPYdGnPrOdQllGoK8HLQdOwblYJkSBGT5ryHY7eCuZYHSvGzJTSXnmI3s4t00FBRp8Ly1';
+
+// Welcome Credits Modal
+const WelcomeCreditsModal = ({ isOpen, onClose, onGetStarted }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-xl p-8 max-w-md mx-4 text-center relative">
+        {/* Celebration Animation */}
+        <div className="mb-6">
+          <div className="w-20 h-20 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full mx-auto flex items-center justify-center mb-4 animate-bounce">
+            <span className="text-3xl">🎉</span>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to VoicePrep AI!</h2>
+          <p className="text-gray-600">Congratulations! You've received</p>
+        </div>
+        
+        {/* Credits Display */}
+        <div className="bg-indigo-50 rounded-lg p-6 mb-6">
+          <div className="flex items-center justify-center mb-2">
+            <div className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center mr-3">
+              <span className="text-xl text-white font-bold">C</span>
+            </div>
+            <span className="text-4xl font-bold text-indigo-600">10</span>
+          </div>
+          <p className="text-indigo-700 font-semibold">Free Credits</p>
+          <p className="text-sm text-gray-600 mt-2">That's 10 minutes of free interview practice!</p>
+        </div>
+        
+        <button
+          onClick={onGetStarted}
+          className="w-full bg-indigo-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
+        >
+          Get Started
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Header Component with Credits Display
+const Header = ({ user, onShowAuth, onNavigate }) => {
+  return (
+    <header className="bg-white shadow-sm border-b">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+              </svg>
+            </div>
+            <button 
+              onClick={() => onNavigate('dashboard')}
+              className="ml-3 text-2xl font-bold text-gray-900 hover:text-indigo-600"
+            >
+              VoicePrep AI
+            </button>
+          </div>
+          
+          {/* Navigation & Credits */}
+          <div className="flex items-center space-x-6">
+            {user && (
+              <>
+                <button 
+                  onClick={() => onNavigate('dashboard')}
+                  className="text-gray-600 hover:text-gray-800 font-medium"
+                >
+                  Dashboard
+                </button>
+                <button 
+                  onClick={() => onNavigate('interview')}
+                  className="text-gray-600 hover:text-gray-800 font-medium"
+                >
+                  New Interview
+                </button>
+                
+                {/* Credits Display */}
+                <div className="flex items-center bg-indigo-50 px-3 py-2 rounded-lg">
+                  <div className="w-5 h-5 bg-indigo-600 rounded-full flex items-center justify-center mr-2">
+                    <span className="text-xs text-white font-bold">C</span>
+                  </div>
+                  <span className="font-semibold text-indigo-700">{user.credits}</span>
+                  <span className="text-sm text-indigo-600 ml-1">credits</span>
+                </div>
+                
+                <div className="flex items-center space-x-3">
+                  <span className="text-sm text-gray-600">Welcome, {user.name}</span>
+                  <button 
+                    onClick={() => onShowAuth('logout')}
+                    className="text-sm text-gray-500 hover:text-gray-700"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </>
+            )}
+            
+            {!user && (
+              <div className="flex items-center space-x-3">
+                <button 
+                  onClick={() => onShowAuth('login')}
+                  className="text-sm text-gray-600 hover:text-gray-800 font-medium"
+                >
+                  Login
+                </button>
+                <button 
+                  onClick={() => onShowAuth('signup')}
+                  className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+                >
+                  Sign Up
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+};

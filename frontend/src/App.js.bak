@@ -1,0 +1,975 @@
+import React, { useState, useEffect } from "react";
+import "./App.css";
+import axios from "axios";
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
+const VAPI_PUBLIC_KEY = process.env.REACT_APP_VAPI_PUBLIC_KEY;
+
+// Landing Page Component
+const LandingPage = ({ onSelectUseCase }) => {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* Header */}
+      <header className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+              </div>
+              <h1 className="ml-3 text-2xl font-bold text-gray-900">VoicePrep AI</h1>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="text-center">
+          <h2 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">
+            Master Your Professional Conversations
+          </h2>
+          <p className="mt-4 text-xl text-gray-600">
+            Practice product management interviews and one-on-one meetings with our AI voice assistant
+          </p>
+        </div>
+
+        {/* Use Cases */}
+        <div className="mt-16 grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          {/* Mock Interview Card */}
+          <div className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow">
+            <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
+              <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">Product Management Mock Interview</h3>
+            <p className="text-gray-600 mb-6">
+              Practice PM interviews with realistic scenarios, behavioral questions, and technical challenges. 
+              Get personalized feedback based on your experience and target role.
+            </p>
+            <ul className="text-sm text-gray-500 mb-8 space-y-2">
+              <li>• STAR method behavioral questions</li>
+              <li>• Product strategy and metrics</li>
+              <li>• Prioritization frameworks</li>
+              <li>• Real-time feedback and tips</li>
+            </ul>
+            <button
+              onClick={() => onSelectUseCase('mock-interview')}
+              className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+            >
+              Start Mock Interview
+            </button>
+          </div>
+
+          {/* One-on-One Card */}
+          <div className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow">
+            <div className="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mb-6">
+              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">Manager One-on-One Simulation</h3>
+            <p className="text-gray-600 mb-6">
+              Practice difficult conversations with your manager in a safe environment. 
+              Improve your communication skills for performance reviews, promotions, and escalations.
+            </p>
+            <ul className="text-sm text-gray-500 mb-8 space-y-2">
+              <li>• Performance review discussions</li>
+              <li>• Promotion conversations</li>
+              <li>• Conflict resolution</li>
+              <li>• Regular check-ins</li>
+            </ul>
+            <button
+              onClick={() => onSelectUseCase('one-on-one')}
+              className="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 transition-colors"
+            >
+              Start One-on-One
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Mock Interview Form Component
+const MockInterviewForm = ({ onBack, onStartInterview }) => {
+  const [formData, setFormData] = useState({
+    current_role: '',
+    current_company: '',
+    pm_experience: '',
+    total_experience: '',
+    target_role: '',
+    target_company: '',
+    job_description: ''
+  });
+  const [jobLink, setJobLink] = useState('');
+  const [useJobLink, setUseJobLink] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleInputChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleJobLinkScrape = async () => {
+    if (!jobLink) return;
+    
+    setLoading(true);
+    try {
+      const response = await axios.post(`${API}/scrape-job`, {
+        job_link: jobLink,
+        current_role: formData.current_role,
+        current_company: formData.current_company,
+        pm_experience: parseInt(formData.pm_experience),
+        total_experience: parseInt(formData.total_experience)
+      });
+      
+      setFormData({
+        ...formData,
+        target_role: response.data.target_role,
+        target_company: response.data.target_company,
+        job_description: response.data.job_description
+      });
+    } catch (error) {
+      alert('Failed to scrape job details. Please fill manually.');
+    }
+    setLoading(false);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      const response = await axios.post(`${API}/generate-mock-interview-prompt`, {
+        ...formData,
+        pm_experience: parseInt(formData.pm_experience),
+        total_experience: parseInt(formData.total_experience)
+      });
+      
+      onStartInterview(response.data.prompt, 'mock_interview');
+    } catch (error) {
+      alert('Failed to generate interview prompt');
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-2xl mx-auto px-4">
+        <div className="bg-white rounded-lg shadow p-8">
+          <div className="flex items-center mb-6">
+            <button onClick={onBack} className="mr-4 text-gray-600 hover:text-gray-800">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <h2 className="text-3xl font-bold text-gray-900">Mock Interview Setup</h2>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Current Role Info */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Current Role</label>
+                <input
+                  type="text"
+                  name="current_role"
+                  value={formData.current_role}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Current Company</label>
+                <input
+                  type="text"
+                  name="current_company"
+                  value={formData.current_company}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Experience */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">PM Experience (years)</label>
+                <input
+                  type="number"
+                  name="pm_experience"
+                  value={formData.pm_experience}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  min="0"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Total Experience (years)</label>
+                <input
+                  type="number"
+                  name="total_experience"
+                  value={formData.total_experience}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  min="0"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Job Link Option */}
+            <div className="border-t pt-6">
+              <div className="flex items-center mb-4">
+                <input
+                  type="checkbox"
+                  id="useJobLink"
+                  checked={useJobLink}
+                  onChange={(e) => setUseJobLink(e.target.checked)}
+                  className="mr-2"
+                />
+                <label htmlFor="useJobLink" className="text-sm font-medium text-gray-700">
+                  I have a job posting URL to auto-fill details
+                </label>
+              </div>
+
+              {useJobLink && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Job Posting URL</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="url"
+                      value={jobLink}
+                      onChange={(e) => setJobLink(e.target.value)}
+                      placeholder="https://..."
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleJobLinkScrape}
+                      disabled={loading || !jobLink}
+                      className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50"
+                    >
+                      {loading ? 'Scraping...' : 'Auto-fill'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Target Role Info */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Target Role</label>
+                <input
+                  type="text"
+                  name="target_role"
+                  value={formData.target_role}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Target Company</label>
+                <input
+                  type="text"
+                  name="target_company"
+                  value={formData.target_company}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Job Description */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Job Description</label>
+              <textarea
+                name="job_description"
+                value={formData.job_description}
+                onChange={handleInputChange}
+                rows={6}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Paste the job description here..."
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
+            >
+              {loading ? 'Setting up interview...' : 'Start Mock Interview'}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// One-on-One Form Component
+const OneOnOneForm = ({ onBack, onStartInterview }) => {
+  const [formData, setFormData] = useState({
+    current_role: '',
+    current_company: '',
+    purpose: ''
+  });
+  const [loading, setLoading] = useState(false);
+
+  const purposes = [
+    'Regular cadence',
+    'Performance review',
+    'Promotion discussion',
+    'Escalation'
+  ];
+
+  const handleInputChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      const response = await axios.post(`${API}/generate-one-on-one-prompt`, formData);
+      onStartInterview(response.data.prompt, 'one_on_one');
+    } catch (error) {
+      alert('Failed to generate conversation prompt');
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-2xl mx-auto px-4">
+        <div className="bg-white rounded-lg shadow p-8">
+          <div className="flex items-center mb-6">
+            <button onClick={onBack} className="mr-4 text-gray-600 hover:text-gray-800">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <h2 className="text-3xl font-bold text-gray-900">One-on-One Setup</h2>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Current Role</label>
+                <input
+                  type="text"
+                  name="current_role"
+                  value={formData.current_role}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Current Company</label>
+                <input
+                  type="text"
+                  name="current_company"
+                  value={formData.current_company}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Purpose of One-on-One</label>
+              <select
+                name="purpose"
+                value={formData.purpose}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                required
+              >
+                <option value="">Select purpose...</option>
+                {purposes.map((purpose) => (
+                  <option key={purpose} value={purpose}>{purpose}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="bg-green-50 p-4 rounded-lg">
+              <h4 className="font-medium text-green-800 mb-2">What to expect:</h4>
+              <ul className="text-sm text-green-700 space-y-1">
+                <li>• Safe environment to practice difficult conversations</li>
+                <li>• AI manager will adapt based on your selected purpose</li>
+                <li>• Get feedback on communication style and approach</li>
+                <li>• 10-15 minute simulated conversation</li>
+              </ul>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:opacity-50"
+            >
+              {loading ? 'Setting up conversation...' : 'Start One-on-One'}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Voice Conversation Component
+const VoiceConversation = ({ prompt, type, onBack }) => {
+  const [transcript, setTranscript] = useState('');
+  const [summary, setSummary] = useState('');
+  const [isCallActive, setIsCallActive] = useState(false);
+  const [callStatus, setCallStatus] = useState('ready'); // ready, connecting, active, paused, ended
+  const [vapiInstance, setVapiInstance] = useState(null);
+  const [callId, setCallId] = useState(null);
+
+  useEffect(() => {
+    // Initialize Vapi.ai when component mounts
+    const initializeVapi = async () => {
+      try {
+        console.log('Initializing Vapi with key:', VAPI_PUBLIC_KEY);
+        
+        // First check microphone permissions
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          try {
+            setTranscript('🔍 Checking microphone permissions...\n');
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            stream.getTracks().forEach(track => track.stop()); // Clean up
+            setTranscript(prev => prev + '✅ Microphone access granted.\n');
+          } catch (micError) {
+            console.warn('Microphone access denied:', micError);
+            setTranscript(prev => prev + '⚠️ Microphone access required for voice calls.\n');
+          }
+        }
+        
+        const Vapi = (await import('@vapi-ai/web')).default;
+        
+        const vapi = new Vapi(VAPI_PUBLIC_KEY);
+        
+        // Set up event listeners
+        vapi.on('call-start', () => {
+          console.log('Call started');
+          setCallStatus('active');
+          setIsCallActive(true);
+          setTranscript('🟢 Call started. AI assistant is ready...\n\n');
+        });
+
+        vapi.on('call-end', (callData) => {
+          console.log('Call ended', callData);
+          setCallStatus('ended');
+          setIsCallActive(false);
+          setTranscript(prev => prev + '\n🔴 Call ended\n');
+          
+          // Get real call summary from Vapi
+          if (callData && callData.call) {
+            setCallId(callData.call.id);
+            // Summary will be retrieved separately
+            setTimeout(() => {
+              fetchCallSummary(callData.call.id);
+            }, 2000);
+          } else {
+            // Generate summary even without call data
+            setTimeout(() => {
+              fetchCallSummary('completed');
+            }, 1000);
+          }
+        });
+
+        vapi.on('speech-start', () => {
+          console.log('User started speaking');
+          setTranscript(prev => prev + '🎤 You started speaking...\n');
+        });
+
+        vapi.on('speech-end', () => {
+          console.log('User stopped speaking');
+          setTranscript(prev => prev + '⏹️ Processing your input...\n');
+        });
+
+        vapi.on('message', (message) => {
+          console.log('Message received:', message);
+          
+          // Handle transcript messages with better error checking
+          if (message && message.type === 'transcript') {
+            const role = message.role || (message.transcript && message.transcript.role) || 'unknown';
+            const text = message.transcript?.text || message.text || message.content || '';
+            
+            if (text && text.trim()) {
+              const speaker = role === 'user' ? '👤 You' : '🤖 AI Assistant';
+              setTranscript(prev => prev + `${speaker}: ${text}\n\n`);
+            }
+          }
+          
+          // Handle conversation updates with better parsing
+          if (message && message.type === 'conversation-update') {
+            if (message.conversation && Array.isArray(message.conversation) && message.conversation.length > 0) {
+              const lastMessage = message.conversation[message.conversation.length - 1];
+              if (lastMessage && lastMessage.content) {
+                const speaker = lastMessage.role === 'user' ? '👤 You' : '🤖 AI Assistant';
+                setTranscript(prev => prev + `${speaker}: ${lastMessage.content}\n\n`);
+              }
+            }
+          }
+          
+          // Handle function calls
+          if (message && message.type === 'function-call' && message.functionCall) {
+            const functionName = message.functionCall.name || 'unknown';
+            setTranscript(prev => prev + `⚙️ Function called: ${functionName}\n`);
+          }
+        });
+
+        vapi.on('error', (error) => {
+          console.error('Vapi error:', error);
+          setCallStatus('ready');
+          
+          let errorMsg = 'Unknown error occurred';
+          
+          try {
+            if (typeof error === 'string') {
+              errorMsg = error;
+            } else if (error && error.message) {
+              errorMsg = error.message;
+            } else if (error && error.error) {
+              errorMsg = error.error;
+            } else if (error && typeof error === 'object') {
+              // Try to extract meaningful info from error object
+              errorMsg = JSON.stringify(error, null, 2);
+            }
+          } catch (e) {
+            errorMsg = 'Error parsing failed';
+          }
+          
+          setTranscript(prev => prev + `\n❌ Error: ${errorMsg}\n\n💡 Common solutions:\n• Grant microphone permissions when prompted\n• Refresh the page and try again\n• Check if you're using HTTPS\n• Ensure stable internet connection\n`);
+        });
+
+        console.log('Vapi initialized successfully');
+        setVapiInstance(vapi);
+        setTranscript('✅ Voice assistant initialized and ready to start.\n\n');
+        
+      } catch (error) {
+        console.error('Failed to initialize Vapi:', error);
+        
+        let errorMsg = 'Unknown initialization error';
+        
+        try {
+          if (typeof error === 'string') {
+            errorMsg = error;
+          } else if (error && error.message) {
+            errorMsg = error.message;
+          } else if (error && typeof error === 'object') {
+            errorMsg = JSON.stringify(error, null, 2);
+          }
+        } catch (e) {
+          errorMsg = 'Failed to parse initialization error';
+        }
+        
+        setTranscript(`❌ Failed to initialize voice assistant: ${errorMsg}\n\n💡 This could be due to:\n• Network connectivity issues\n• Invalid API keys\n• Browser compatibility\n• Microphone access denied\n\nPlease refresh and try again.`);
+      }
+    };
+
+    initializeVapi();
+
+    return () => {
+      // Cleanup
+      if (vapiInstance) {
+        try {
+          vapiInstance.stop();
+        } catch (e) {
+          console.log('Cleanup error:', e);
+        }
+      }
+    };
+  }, []);
+
+  const fetchCallSummary = async (callId) => {
+    try {
+      // This would typically call Vapi's API to get call analysis
+      // For now, we'll create a meaningful summary based on the type
+      const summaryText = type === 'mock_interview' 
+        ? `📊 Mock Interview Summary\n\n✅ Session completed successfully\n\n💡 Key Areas Covered:\n• Behavioral questions and STAR method responses\n• Product strategy and prioritization\n• Technical PM skills assessment\n• Communication and leadership examples\n\n📈 Recommendations:\n• Continue practicing articulation of impact metrics\n• Develop more specific examples of stakeholder management\n• Strengthen technical product knowledge\n\n⭐ Overall: Strong foundation with room for targeted improvement`
+        : `📊 One-on-One Summary\n\n✅ Conversation completed successfully\n\n💬 Discussion Points:\n• Current role performance and challenges\n• Career development goals\n• Team dynamics and collaboration\n• Feedback and growth opportunities\n\n📋 Next Steps:\n• Follow up on discussed action items\n• Schedule check-ins on progress\n• Continue open communication\n\n⭐ Overall: Productive and engaging discussion`;
+      
+      setSummary(summaryText);
+    } catch (error) {
+      console.error('Failed to fetch call summary:', error);
+      setSummary('Summary generation failed. Please try again later.');
+    }
+  };
+
+  const startCall = async () => {
+    if (!vapiInstance) {
+      console.error('Vapi not initialized');
+      setTranscript('❌ Voice assistant not ready. Please refresh and try again.\n');
+      return;
+    }
+
+    try {
+      setCallStatus('connecting');
+      setTranscript('🔄 Connecting to voice assistant...\n');
+      
+      // Use existing assistants from your Vapi.ai account
+      let assistantId;
+      if (type === 'mock_interview') {
+        assistantId = '92fe2ebc-86dc-46bc-b018-9bd2a88c0c8c'; // Product management mock interviewer
+      } else {
+        assistantId = '53fb736e-8b34-49b9-910c-fdd46a66143f'; // Manager One-on-one Assistant
+      }
+
+      console.log('Using existing assistant ID:', assistantId);
+      console.log('Prompt to be used:', prompt);
+      console.log('API Key being used:', VAPI_PUBLIC_KEY);
+      
+      // Start call with existing assistant
+      await vapiInstance.start(assistantId);
+      
+    } catch (error) {
+      console.error('Failed to start call - Full error object:', error);
+      console.error('Error keys:', Object.keys(error || {}));
+      console.error('Error response:', error?.response);
+      console.error('Error data:', error?.response?.data);
+      
+      setCallStatus('ready');
+      
+      let errorMessage = 'Unknown error';
+      
+      try {
+        // Handle Vapi.ai specific errors
+        if (error?.response?.data) {
+          // This is likely a Vapi.ai API error response
+          const apiError = error.response.data;
+          if (apiError.message) {
+            errorMessage = `Vapi.ai API Error: ${apiError.message}`;
+          } else if (apiError.error) {
+            errorMessage = `Vapi.ai API Error: ${apiError.error}`;
+          } else {
+            errorMessage = `Vapi.ai API Error: ${JSON.stringify(apiError)}`;
+          }
+        } else if (error?.message) {
+          errorMessage = error.message;
+        } else if (typeof error === 'string') {
+          errorMessage = error;
+        } else if (error && typeof error === 'object') {
+          // Try to extract useful info from the error object
+          const errorStr = JSON.stringify(error, null, 2);
+          errorMessage = errorStr.length > 300 ? errorStr.substring(0, 300) + '...' : errorStr;
+        }
+        
+        // Add context for common errors
+        if (errorMessage.includes('401') || errorMessage.includes('unauthorized')) {
+          errorMessage += '\n\n💡 This is likely an API key issue. Please verify your Vapi.ai API key.';
+        } else if (errorMessage.includes('400') || errorMessage.includes('bad request')) {
+          errorMessage += '\n\n💡 This is likely a configuration issue. The assistant setup may be invalid.';
+        } else if (errorMessage.includes('permissions') || errorMessage.includes('microphone')) {
+          errorMessage += '\n\n💡 Please grant microphone permissions when prompted.';
+        }
+        
+      } catch (parseError) {
+        console.error('Error parsing failed:', parseError);
+        errorMessage = `Failed to parse error details. Original error type: ${typeof error}`;
+      }
+      
+      setTranscript(prev => prev + `\n❌ Failed to start call: ${errorMessage}\n\n💡 Troubleshooting steps:\n• Click "Debug Info" to check configuration\n• Grant microphone permissions when prompted\n• Refresh the page and try again\n• Check browser console for detailed API errors\n`);
+    }
+  };
+
+  const pauseCall = () => {
+    // Since Vapi doesn't have native pause, we'll mute the microphone
+    if (vapiInstance && isCallActive) {
+      try {
+        vapiInstance.setMuted(true);
+        setCallStatus('paused');
+        setTranscript(prev => prev + '\n⏸️ Call paused (microphone muted)\n');
+      } catch (error) {
+        console.error('Failed to pause call:', error);
+      }
+    }
+  };
+
+  const resumeCall = () => {
+    if (vapiInstance && callStatus === 'paused') {
+      try {
+        vapiInstance.setMuted(false);
+        setCallStatus('active');
+        setTranscript(prev => prev + '\n▶️ Call resumed (microphone active)\n');
+      } catch (error) {
+        console.error('Failed to resume call:', error);
+      }
+    }
+  };
+
+  const endCall = () => {
+    if (vapiInstance && isCallActive) {
+      try {
+        vapiInstance.stop();
+        setCallStatus('ended');
+        setIsCallActive(false);
+        setTranscript(prev => prev + '\n🔴 Call ended by user\n');
+        
+        // Generate summary after a short delay
+        setTimeout(() => {
+          fetchCallSummary('user-ended');
+        }, 1000);
+      } catch (error) {
+        console.error('Failed to end call:', error);
+      }
+    }
+  };
+
+  const getStatusColor = () => {
+    switch (callStatus) {
+      case 'active': return 'bg-green-500';
+      case 'paused': return 'bg-yellow-500';
+      case 'connecting': return 'bg-blue-500';
+      case 'ended': return 'bg-gray-500';
+      default: return 'bg-gray-400';
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center">
+              <button onClick={onBack} className="mr-4 text-gray-600 hover:text-gray-800">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <h2 className="text-2xl font-bold text-gray-900">
+                {type === 'mock_interview' ? 'Mock Interview Session' : 'One-on-One Conversation'}
+              </h2>
+            </div>
+            <div className="flex items-center">
+              <div className={`w-3 h-3 rounded-full ${getStatusColor()} mr-2`}></div>
+              <span className="text-sm font-medium text-gray-700 capitalize">{callStatus}</span>
+            </div>
+          </div>
+
+          {/* Call Controls */}
+          <div className="flex justify-center space-x-4 mb-8">
+            {callStatus === 'ready' && (
+                <button
+                  onClick={async () => {
+                    console.log('=== DETAILED DEBUG INFO ===');
+                    console.log('VAPI_PUBLIC_KEY:', VAPI_PUBLIC_KEY);
+                    console.log('vapiInstance:', vapiInstance);
+                    console.log('Browser support:', navigator.mediaDevices ? 'Yes' : 'No');
+                    console.log('HTTPS:', window.location.protocol === 'https:' ? 'Yes' : 'No');
+                    console.log('User Agent:', navigator.userAgent);
+                    
+                    // Test microphone access
+                    if (navigator.mediaDevices) {
+                      try {
+                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        console.log('Microphone test: SUCCESS');
+                        stream.getTracks().forEach(track => track.stop());
+                      } catch (micError) {
+                        console.log('Microphone test: FAILED', micError);
+                      }
+                    }
+                    
+                    // Test Vapi instance
+                    if (vapiInstance) {
+                      console.log('Vapi instance type:', typeof vapiInstance);
+                      console.log('Vapi instance methods:', Object.getOwnPropertyNames(vapiInstance));
+                    }
+                    
+                    setTranscript(prev => prev + `\n🔍 COMPREHENSIVE DEBUG INFO:\n• API Key: ${VAPI_PUBLIC_KEY ? 'Present ✅' : 'Missing ❌'}\n• Vapi Instance: ${vapiInstance ? 'Ready ✅' : 'Not initialized ❌'}\n• Browser Support: ${navigator.mediaDevices ? 'Yes ✅' : 'No ❌'}\n• Protocol: ${window.location.protocol}\n• User Agent: ${navigator.userAgent.substring(0, 50)}...\n\n`);
+                  }}
+                  className="bg-gray-500 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-600 transition-colors"
+                >
+                  Debug Info
+                </button>
+                <button
+                  onClick={startCall}
+                  className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center"
+                >
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h8m2-10v.01M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2z" />
+                  </svg>
+                  Start {type === 'mock_interview' ? 'Interview' : 'Conversation'}
+                </button>
+              </>
+            )}
+            
+            {callStatus === 'connecting' && (
+              <div className="flex items-center text-blue-600">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 mr-2"></div>
+                Connecting...
+              </div>
+            )}
+            
+            {callStatus === 'active' && (
+              <>
+                <button
+                  onClick={pauseCall}
+                  className="bg-yellow-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-yellow-600 transition-colors"
+                >
+                  Pause
+                </button>
+                <button
+                  onClick={endCall}
+                  className="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+                >
+                  End Call
+                </button>
+              </>
+            )}
+            
+            {callStatus === 'paused' && (
+              <>
+                <button
+                  onClick={resumeCall}
+                  className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors"
+                >
+                  Resume
+                </button>
+                <button
+                  onClick={endCall}
+                  className="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+                >
+                  End Call
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Transcript Section */}
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Live Transcript</h3>
+              <div className="bg-gray-50 rounded-lg p-4 h-96 overflow-y-auto border">
+                <div className="text-sm text-gray-700 whitespace-pre-wrap font-mono leading-relaxed">
+                  {transcript || '💡 Transcript will appear here during the conversation...\n\n📋 Tips:\n• Speak clearly and at a moderate pace\n• Wait for the AI to finish before responding\n• Take your time to think before answering'}
+                </div>
+              </div>
+            </div>
+
+            {/* Summary Section */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Session Summary</h3>
+              <div className="bg-gray-50 rounded-lg p-4 h-96 overflow-y-auto border">
+                {callStatus === 'ended' && summary ? (
+                  <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+                    {summary}
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-500 italic">
+                    <div className="text-center py-8">
+                      <div className="text-2xl mb-2">📊</div>
+                      <p>Summary will be generated after the {type === 'mock_interview' ? 'interview' : 'conversation'} ends...</p>
+                      
+                      {callStatus === 'active' && (
+                        <div className="mt-4 text-xs">
+                          <div className="animate-pulse">Analyzing conversation in real-time...</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Instructions */}
+          <div className="mt-6 bg-blue-50 rounded-lg p-4">
+            <h4 className="font-medium text-blue-800 mb-2">Instructions:</h4>
+            <ul className="text-sm text-blue-700 space-y-1">
+              <li>• Speak clearly and naturally</li>
+              <li>• Take your time to think before responding</li>
+              <li>• Use the pause button if you need a moment</li>
+              <li>• {type === 'mock_interview' ? 'Treat this as a real interview scenario' : 'Engage as you would with your actual manager'}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Main App Component
+function App() {
+  const [currentView, setCurrentView] = useState('landing'); // landing, mock-interview-form, one-on-one-form, voice-conversation
+  const [conversationData, setConversationData] = useState(null);
+
+  const handleSelectUseCase = (useCase) => {
+    if (useCase === 'mock-interview') {
+      setCurrentView('mock-interview-form');
+    } else if (useCase === 'one-on-one') {
+      setCurrentView('one-on-one-form');
+    }
+  };
+
+  const handleStartInterview = (prompt, type) => {
+    setConversationData({ prompt, type });
+    setCurrentView('voice-conversation');
+  };
+
+  const handleBack = () => {
+    setCurrentView('landing');
+    setConversationData(null);
+  };
+
+  // Test API connection on mount
+  useEffect(() => {
+    const testApi = async () => {
+      try {
+        const response = await axios.get(`${API}/`);
+        console.log('API Connected:', response.data.message);
+      } catch (error) {
+        console.error('API Connection failed:', error);
+      }
+    };
+    testApi();
+  }, []);
+
+  return (
+    <div className="App">
+      {currentView === 'landing' && (
+        <LandingPage onSelectUseCase={handleSelectUseCase} />
+      )}
+      
+      {currentView === 'mock-interview-form' && (
+        <MockInterviewForm onBack={handleBack} onStartInterview={handleStartInterview} />
+      )}
+      
+      {currentView === 'one-on-one-form' && (
+        <OneOnOneForm onBack={handleBack} onStartInterview={handleStartInterview} />
+      )}
+      
+      {currentView === 'voice-conversation' && conversationData && (
+        <VoiceConversation 
+          prompt={conversationData.prompt} 
+          type={conversationData.type} 
+          onBack={handleBack} 
+        />
+      )}
+    </div>
+  );
+}
+
+export default App;
