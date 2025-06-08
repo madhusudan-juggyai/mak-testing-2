@@ -5,6 +5,7 @@ output_directory = "frontend/build"
 [build.environment]
 NODE_VERSION = "18"
 NODE_ENV = "production"
+CI = "true"
 
 [build.publish]
 framework = "react"
@@ -13,3 +14,12 @@ framework = "react"
   pattern = "/*"
   handler = "static"
   options = { index = "index.html" }
+
+[build.environment]
+# Add necessary environment variables for React
+PUBLIC_URL = "/"
+REACT_APP_API_URL = "https://your-api-url.com"  # Replace with your actual API URL
+
+# Add build-specific environment variables
+SKIP_PREFLIGHT_CHECK = "true"
+GENERATE_SOURCEMAP = "false"
