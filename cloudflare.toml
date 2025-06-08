@@ -1,11 +1,10 @@
 [build]
-command = "cd frontend && npm install && npm run build"
+command = "chmod +x build.sh && ./build.sh"
 output_directory = "frontend/build"
 
 [build.environment]
 NODE_VERSION = "18"
 NODE_ENV = "production"
-CI = "true"
 
 [build.publish]
 framework = "react"
